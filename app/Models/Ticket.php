@@ -24,6 +24,10 @@ class Ticket extends Model
             if (blank($ticket->nomor)) {
                 $ticket->nomor = static::nomorBerikutnya($ticket->tanggal);
             }
+
+            if ($ticket->status === 'selesai' && blank($ticket->selesai_at)) {
+                $ticket->selesai_at = now();
+            }
         });
 
         static::updating(function (Ticket $ticket) {

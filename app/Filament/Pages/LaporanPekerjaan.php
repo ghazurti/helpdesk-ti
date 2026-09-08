@@ -74,14 +74,28 @@ class LaporanPekerjaan extends Page
         $tickets = $this->hasilQuery()->get();
         return response()->streamDownload(function () use ($tickets) {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['Nomor','Tanggal','Petugas','Unit','Kategori','Judul','Status']);
+            fputcsv($out, array_map([static::class, 'csvAman'], ['Nomor','Tanggal','Petugas','Unit','Kategori','Judul','Status']));
             foreach ($tickets as $t) {
-                fputcsv($out, [
+                fputcsv($out, array_map([static::class, 'csvAman'], [
                     $t->nomor, $t->tanggal?->format('Y-m-d'), $t->petugas?->name,
                     $t->unit?->nama, $t->kategori?->nama, $t->judul, $t->status,
-                ]);
+                ]));
             }
             fclose($out);
         }, 'laporan-pekerjaan.csv', ['Content-Type' => 'text/csv']);
+    }
+
+    /**
+     * Prevent CSV formula injection: prefix values that start with a
+     * character a spreadsheet app would interpret as a formula trigger
+     * with a single quote so they are treated as plain text.
+     */
+    protected static function csvAman(mixed $value): mixed
+    {
+        if (is_string($value) && preg_match('/^[=+\-@\t\r]/', $value)) {
+            return "'".$value;
+        }
+
+        return $value;
     }
 }
