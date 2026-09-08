@@ -1,9 +1,11 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Carbon;
 
 class Ticket extends Model
 {
@@ -43,7 +45,7 @@ class Ticket extends Model
 
     public static function nomorBerikutnya($tanggal): string
     {
-        $tahun = \Illuminate\Support\Carbon::parse($tanggal ?? now())->format('Y');
+        $tahun = Carbon::parse($tanggal ?? now())->format('Y');
         $prefix = "TKT-{$tahun}-";
 
         return DB::transaction(function () use ($prefix) {
@@ -53,6 +55,29 @@ class Ticket extends Model
                 ->value('nomor');
             $seq = $last ? ((int) substr($last, strlen($prefix))) + 1 : 1;
             return $prefix.str_pad((string) $seq, 4, '0', STR_PAD_LEFT);
+        });
+    }
+
+    /**
+     * Ensure number generation and the INSERT happen inside the same outer
+     * transaction, so the FOR UPDATE row lock taken in nomorBerikutnya()
+     * (see the "creating" event above) is held until the insert commits.
+     * Without this, the locked SELECT's own transaction commits before the
+     * INSERT runs (which happens later, outside any transaction, inside
+     * Eloquent's performInsert), so two concurrent creates for the same
+     * year can compute the same nomor and one fails with a unique-
+     * constraint violation. Existing records (already saved) and any
+     * caller that pre-assigns nomor bypass this and behave exactly as
+     * before.
+     */
+    public function save(array $options = []): bool
+    {
+        if ($this->exists || filled($this->nomor)) {
+            return parent::save($options);
+        }
+
+        return DB::transaction(function () use ($options) {
+            return parent::save($options);
         });
     }
 
