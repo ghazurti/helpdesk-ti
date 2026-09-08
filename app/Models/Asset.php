@@ -64,4 +64,9 @@ class Asset extends Model
             return $move;
         });
     }
+
+    public function repairs()
+    {
+        return $this->hasMany(Ticket::class)->latest('tanggal');
+    }
 }
