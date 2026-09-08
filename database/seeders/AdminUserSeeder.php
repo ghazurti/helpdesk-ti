@@ -10,9 +10,16 @@ class AdminUserSeeder extends Seeder
 {
     public function run(): void
     {
-        User::firstOrCreate(
+        // Guarantee the `admin` role exists even when this seeder is run
+        // directly (e.g. in tests) without going through DatabaseSeeder's
+        // ordering, which also calls RoleSeeder before this one.
+        $this->callOnce(RoleSeeder::class);
+
+        $user = User::firstOrCreate(
             ['email' => 'admin@helpdesk.test'],
             ['name' => 'Administrator', 'password' => Hash::make('password')],
         );
+
+        $user->assignRole('admin');
     }
 }
