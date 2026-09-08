@@ -2,9 +2,14 @@
 namespace App\Filament\Pages;
 
 use App\Models\Ticket;
+use App\Models\Unit;
+use App\Models\User;
+use App\Models\WorkCategory;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 use Filament\Pages\Page;
+use Livewire\Attributes\Computed;
 
 class LaporanPekerjaan extends Page
 {
@@ -31,6 +36,24 @@ class LaporanPekerjaan extends Page
             ->when($f['status'] ?? null, fn ($q, $v) => $q->where('status', $v));
     }
 
+    #[Computed]
+    public function petugasOptions(): Collection
+    {
+        return User::orderBy('name')->get(['id', 'name']);
+    }
+
+    #[Computed]
+    public function unitOptions(): Collection
+    {
+        return Unit::orderBy('nama')->get(['id', 'nama']);
+    }
+
+    #[Computed]
+    public function kategoriOptions(): Collection
+    {
+        return WorkCategory::orderBy('nama')->get(['id', 'nama']);
+    }
+
     public function hasilQuery(): Builder
     {
         return static::terapkanFilter(
@@ -43,7 +66,7 @@ class LaporanPekerjaan extends Page
     {
         $tickets = $this->hasilQuery()->get();
         $pdf = Pdf::loadView('laporan.pekerjaan-pdf', ['tickets' => $tickets]);
-        return response()->streamDownload(fn () => print($pdf->output()), 'laporan-pekerjaan.pdf');
+        return response()->streamDownload(fn () => print($pdf->output()), 'laporan-pekerjaan.pdf', ['Content-Type' => 'application/pdf']);
     }
 
     public function exportExcel()

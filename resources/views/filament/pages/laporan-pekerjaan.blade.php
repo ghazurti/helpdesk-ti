@@ -14,7 +14,7 @@
             <label for="user_id" class="text-sm font-medium">Petugas</label>
             <select id="user_id" wire:model="user_id" class="fi-select-input block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-sm">
                 <option value="">Semua Petugas</option>
-                @foreach (\App\Models\User::orderBy('name')->get(['id','name']) as $petugas)
+                @foreach ($this->petugasOptions as $petugas)
                     <option value="{{ $petugas->id }}">{{ $petugas->name }}</option>
                 @endforeach
             </select>
@@ -24,7 +24,7 @@
             <label for="unit_id" class="text-sm font-medium">Unit</label>
             <select id="unit_id" wire:model="unit_id" class="fi-select-input block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-sm">
                 <option value="">Semua Unit</option>
-                @foreach (\App\Models\Unit::orderBy('nama')->get(['id','nama']) as $unit)
+                @foreach ($this->unitOptions as $unit)
                     <option value="{{ $unit->id }}">{{ $unit->nama }}</option>
                 @endforeach
             </select>
@@ -34,7 +34,7 @@
             <label for="work_category_id" class="text-sm font-medium">Kategori</label>
             <select id="work_category_id" wire:model="work_category_id" class="fi-select-input block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-sm">
                 <option value="">Semua Kategori</option>
-                @foreach (\App\Models\WorkCategory::orderBy('nama')->get(['id','nama']) as $kategori)
+                @foreach ($this->kategoriOptions as $kategori)
                     <option value="{{ $kategori->id }}">{{ $kategori->nama }}</option>
                 @endforeach
             </select>
