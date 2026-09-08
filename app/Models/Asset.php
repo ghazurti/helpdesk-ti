@@ -5,6 +5,7 @@ namespace App\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\DB;
 
 class Asset extends Model
 {
@@ -42,5 +43,25 @@ class Asset extends Model
         $perBulan = $this->harga / $this->masa_manfaat_bulan;
         $akumulasi = min((float) $this->harga, $perBulan * $bulanTerpakai);
         return round((float) $this->harga - $akumulasi, 2);
+    }
+
+    public function movements()
+    {
+        return $this->hasMany(AssetMovement::class)->latest('tanggal');
+    }
+
+    public function pindahKe(Unit $tujuan, ?string $keterangan, User $oleh): AssetMovement
+    {
+        return DB::transaction(function () use ($tujuan, $keterangan, $oleh) {
+            $move = $this->movements()->create([
+                'from_unit_id' => $this->unit_id,
+                'to_unit_id'   => $tujuan->id,
+                'tanggal'      => now()->toDateString(),
+                'keterangan'   => $keterangan,
+                'user_id'      => $oleh->id,
+            ]);
+            $this->update(['unit_id' => $tujuan->id]);
+            return $move;
+        });
     }
 }
