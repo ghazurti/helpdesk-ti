@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- PHP `^8.2`; Laravel `^11.0`; Filament `^3.2`.
+- PHP `^8.2`; Laravel `^12.0` (upgraded from `^11.0` per controller Ruling on 2026-09-08 — Laravel 11 is EOL for security patches and carries unpatched high/medium advisories); Filament `^3.2`.
 - Database connection `mysql`, database name `helpdesk_it`, host `127.0.0.1`, port `3306`, user `root`, empty password (XAMPP MariaDB 10.4.28). Charset `utf8mb4`.
 - All UI labels and enum display text in **Bahasa Indonesia**.
 - Roles are exactly two: `admin` and `staf_it` (spatie guard `web`).
