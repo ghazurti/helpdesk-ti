@@ -5,6 +5,6 @@ it('boots and reaches the database', function () {
         ->toBe('helpdesk_it_test');
 });
 
-it('serves the welcome page', function () {
-    $this->get('/')->assertOk();
+it('redirects the root to the admin panel', function () {
+    $this->get('/')->assertRedirect('/admin');
 });
