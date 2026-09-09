@@ -16,7 +16,7 @@ class AdminUserSeeder extends Seeder
         $this->callOnce(RoleSeeder::class);
 
         $user = User::firstOrCreate(
-            ['email' => 'admin@helpdesk.test'],
+            ['email' => 'ghazurillahi2@gmail.com'],
             ['name' => 'Administrator', 'password' => Hash::make(env('ADMIN_PASSWORD', 'password'))],
         );
 

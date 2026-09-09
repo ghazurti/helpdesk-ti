@@ -51,8 +51,8 @@ class DemoSeeder extends Seeder
 
         // --- Petugas IT (staf_it users) --------------------------------
         $petugasNames = [
-            'Budi Santoso' => 'budi.santoso@helpdesk.test',
-            'Siti Rahma' => 'siti.rahma@helpdesk.test',
+            'Budi Santoso' => 'budi.santoso@helpdesk.local',
+            'Siti Rahma' => 'siti.rahma@helpdesk.local',
         ];
         $petugas = collect($petugasNames)->map(function (string $email, string $name) {
             $user = User::firstOrCreate(
