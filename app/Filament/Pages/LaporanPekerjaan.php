@@ -54,6 +54,11 @@ class LaporanPekerjaan extends Page
         return WorkCategory::orderBy('nama')->get(['id', 'nama']);
     }
 
+    public function rataRataPenyelesaian(): string
+    {
+        return Ticket::formatDurasiJam(Ticket::rataRataPenyelesaianJam($this->hasilQuery()));
+    }
+
     public function hasilQuery(): Builder
     {
         return static::terapkanFilter(

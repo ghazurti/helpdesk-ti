@@ -85,6 +85,55 @@ class Ticket extends Model
         });
     }
 
+    /**
+     * Durasi penyelesaian tiket ini dalam jam (desimal), dihitung dari
+     * created_at (kapan tiket benar-benar dibuat, lengkap dengan jam)
+     * sampai selesai_at. Null jika tiket belum selesai.
+     */
+    public function durasiPenyelesaianJam(): ?float
+    {
+        if (! $this->selesai_at) {
+            return null;
+        }
+
+        return $this->created_at->diffInSeconds($this->selesai_at) / 3600;
+    }
+
+    /**
+     * Rata-rata durasi penyelesaian (jam) atas tiket berstatus selesai,
+     * dihitung di level database. Terima query yang sudah difilter
+     * (mis. dari halaman Laporan) supaya hasilnya ikut mengikuti filter
+     * yang sedang aktif; default ke semua tiket bila tidak diberikan.
+     */
+    public static function rataRataPenyelesaianJam(?\Illuminate\Database\Eloquent\Builder $query = null): ?float
+    {
+        $avgSeconds = ($query ?? static::query())
+            ->reorder()
+            ->where('status', 'selesai')
+            ->whereNotNull('selesai_at')
+            ->selectRaw('AVG(TIMESTAMPDIFF(SECOND, created_at, selesai_at)) as rata')
+            ->value('rata');
+
+        return $avgSeconds === null ? null : ((float) $avgSeconds) / 3600;
+    }
+
+    /**
+     * Format durasi jam (desimal) jadi teks Indonesia: "X,X jam" di bawah
+     * 24 jam, "X,X hari" dari 24 jam ke atas, atau "-" jika null.
+     */
+    public static function formatDurasiJam(?float $jam): string
+    {
+        if ($jam === null) {
+            return '-';
+        }
+
+        if ($jam < 24) {
+            return number_format($jam, 1, ',', '.').' jam';
+        }
+
+        return number_format($jam / 24, 1, ',', '.').' hari';
+    }
+
     public function petugas()    { return $this->belongsTo(User::class, 'user_id'); }
     public function unit()       { return $this->belongsTo(Unit::class); }
     public function kategori()   { return $this->belongsTo(WorkCategory::class, 'work_category_id'); }

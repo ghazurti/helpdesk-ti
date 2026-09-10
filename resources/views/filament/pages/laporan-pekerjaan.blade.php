@@ -63,6 +63,13 @@
 
     @php $rows = $this->hasilQuery()->get(); @endphp
 
+    <x-filament::section heading="Rata-rata Waktu Penyelesaian">
+        <p class="text-sm">
+            {{ $this->rataRataPenyelesaian() }}
+            <span class="text-gray-500">(dari tiket selesai sesuai filter di atas)</span>
+        </p>
+    </x-filament::section>
+
     <x-filament::section heading="Hasil">
         <div class="overflow-x-auto">
             <table class="fi-ta-table w-full text-start text-sm">
@@ -75,6 +82,7 @@
                         <th class="px-3 py-2 text-start font-medium">Kategori</th>
                         <th class="px-3 py-2 text-start font-medium">Judul</th>
                         <th class="px-3 py-2 text-start font-medium">Status</th>
+                        <th class="px-3 py-2 text-start font-medium">Durasi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -87,10 +95,11 @@
                             <td class="px-3 py-2">{{ $row->kategori?->nama }}</td>
                             <td class="px-3 py-2">{{ $row->judul }}</td>
                             <td class="px-3 py-2">{{ $row->status }}</td>
+                            <td class="px-3 py-2">{{ \App\Models\Ticket::formatDurasiJam($row->durasiPenyelesaianJam()) }}</td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-3 py-4 text-center text-gray-500">Tidak ada data untuk filter yang dipilih.</td>
+                            <td colspan="8" class="px-3 py-4 text-center text-gray-500">Tidak ada data untuk filter yang dipilih.</td>
                         </tr>
                     @endforelse
                 </tbody>

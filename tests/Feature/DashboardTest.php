@@ -12,5 +12,6 @@ it('renders the stat overview widget', function () {
 
     livewire(\App\Filament\Widgets\StatOverview::class)
         ->assertOk()
-        ->assertSee('Tiket Selesai');
+        ->assertSee('Tiket Selesai')
+        ->assertSee('Rata-rata Penyelesaian');
 });

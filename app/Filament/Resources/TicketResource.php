@@ -167,6 +167,9 @@ class TicketResource extends Resource
                     ->label('Tanggal')
                     ->date()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('durasi_penyelesaian')
+                    ->label('Durasi Penyelesaian')
+                    ->state(fn (\App\Models\Ticket $record) => \App\Models\Ticket::formatDurasiJam($record->durasiPenyelesaianJam())),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')

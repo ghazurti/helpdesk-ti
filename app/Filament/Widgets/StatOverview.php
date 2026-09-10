@@ -14,6 +14,7 @@ class StatOverview extends Base
             Stat::make('Tiket Selesai', Ticket::where('status', 'selesai')->count()),
             Stat::make('Aset Rusak/Perbaikan', Asset::whereIn('kondisi', ['rusak','perbaikan'])->count()),
             Stat::make('Total Aset', Asset::count()),
+            Stat::make('Rata-rata Penyelesaian', Ticket::formatDurasiJam(Ticket::rataRataPenyelesaianJam())),
         ];
     }
 }
