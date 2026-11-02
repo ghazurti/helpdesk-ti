@@ -176,10 +176,23 @@ class AssetResource extends Resource
                             auth()->user(),
                         );
                     }),
+                Tables\Actions\Action::make('label')
+                    ->label('Label QR')
+                    ->icon('heroicon-o-qr-code')
+                    ->url(fn (Asset $record) => route('filament.admin.aset.label', ['ids' => $record->id]))
+                    ->openUrlInNewTab(),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\BulkAction::make('cetakLabel')
+                        ->label('Cetak Label QR')
+                        ->icon('heroicon-o-qr-code')
+                        ->deselectRecordsAfterCompletion()
+                        ->action(fn (\Illuminate\Database\Eloquent\Collection $records) => redirect()->route(
+                            'filament.admin.aset.label',
+                            ['ids' => $records->pluck('id')->implode(',')],
+                        )),
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);

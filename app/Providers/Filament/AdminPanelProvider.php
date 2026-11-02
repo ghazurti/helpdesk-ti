@@ -53,6 +53,10 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            ->authenticatedRoutes(function () {
+                \Illuminate\Support\Facades\Route::get('aset/label', \App\Http\Controllers\AsetLabelController::class)
+                    ->name('aset.label');
+            });
     }
 }
