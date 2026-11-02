@@ -14,7 +14,7 @@ class Asset extends Model
     protected $fillable = [
         'kode','nama','asset_category_id','merk','model','serial_number',
         'tanggal_beli','harga','garansi_sampai','kondisi','unit_id',
-        'masa_manfaat_bulan','catatan',
+        'masa_manfaat_bulan','catatan','foto',
     ];
 
     protected $casts = [

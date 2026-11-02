@@ -91,6 +91,14 @@ class AssetResource extends Resource
                 Forms\Components\Textarea::make('catatan')
                     ->label('Catatan')
                     ->columnSpanFull(),
+                Forms\Components\FileUpload::make('foto')
+                    ->label('Foto Aset')
+                    ->image()
+                    ->disk('public')
+                    ->directory('aset-foto')
+                    ->maxSize(2048)
+                    ->helperText('Foto perangkat untuk identifikasi. Maks 2 MB.')
+                    ->columnSpanFull(),
             ]);
     }
 
@@ -98,6 +106,10 @@ class AssetResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\ImageColumn::make('foto')
+                    ->label('Foto')
+                    ->disk('public')
+                    ->square(),
                 Tables\Columns\TextColumn::make('kode')
                     ->label('Kode')
                     ->searchable(),
