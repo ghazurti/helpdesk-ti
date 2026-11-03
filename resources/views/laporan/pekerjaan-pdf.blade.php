@@ -16,6 +16,34 @@
     <h1>Laporan Pekerjaan IT</h1>
     <p class="tanggal-cetak">Dicetak pada: {{ now()->format('d-m-Y H:i') }}</p>
 
+    @isset($kpi)
+        <table>
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Indikator</th>
+                    <th>Rumus</th>
+                    <th>Capaian</th>
+                    <th>Target</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (\App\Filament\Pages\LaporanPekerjaan::indikatorKpi() as $kunci => $indikator)
+                    @php $k = $kpi[$kunci]; @endphp
+                    <tr>
+                        <td>{{ $loop->iteration }}</td>
+                        <td>{{ $indikator['nama'] }}</td>
+                        <td>{{ $indikator['rumus'] }}</td>
+                        <td>{{ $k['persen'] === null ? '-' : number_format($k['persen'], 1, ',', '.').'% ('.$k['tepat'].'/'.$k['total'].')' }}</td>
+                        <td>&ge; {{ $k['target'] }}%</td>
+                        <td>{{ $k['tercapai'] === null ? 'Belum ada data' : ($k['tercapai'] ? 'Tercapai' : 'Belum tercapai') }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @endisset
+
     <table>
         <thead>
             <tr>

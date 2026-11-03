@@ -59,6 +59,26 @@ class LaporanPekerjaan extends Page
         return Ticket::formatDurasiJam(Ticket::rataRataPenyelesaianJam($this->hasilQuery()));
     }
 
+    /** Nama dan rumus tiap indikator KPI, urut sesuai nomor di laporan. */
+    public static function indikatorKpi(): array
+    {
+        return [
+            'respons' => [
+                'nama' => 'Kecepatan respons gangguan sesuai prioritas',
+                'rumus' => 'Tiket direspons sesuai target ÷ total tiket × 100%',
+            ],
+            'penyelesaian' => [
+                'nama' => 'Ketepatan waktu penyelesaian gangguan',
+                'rumus' => 'Tiket selesai sesuai target ÷ total tiket × 100%',
+            ],
+        ];
+    }
+
+    public function kpi(): array
+    {
+        return Ticket::kpi($this->hasilQuery());
+    }
+
     public function hasilQuery(): Builder
     {
         return static::terapkanFilter(
@@ -70,7 +90,7 @@ class LaporanPekerjaan extends Page
     public function exportPdf()
     {
         $tickets = $this->hasilQuery()->get();
-        $pdf = Pdf::loadView('laporan.pekerjaan-pdf', ['tickets' => $tickets]);
+        $pdf = Pdf::loadView('laporan.pekerjaan-pdf', ['tickets' => $tickets, 'kpi' => $this->kpi()]);
         return response()->streamDownload(fn () => print($pdf->output()), 'laporan-pekerjaan.pdf', ['Content-Type' => 'application/pdf']);
     }
 

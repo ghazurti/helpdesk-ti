@@ -63,6 +63,60 @@
 
     @php $rows = $this->hasilQuery()->get(); @endphp
 
+    @php $kpi = $this->kpi(); @endphp
+
+    <x-filament::section heading="Indikator Kinerja (KPI)">
+        <div class="overflow-x-auto">
+            <table class="fi-ta-table w-full text-start text-sm">
+                <thead>
+                    <tr class="border-b border-gray-200 dark:border-white/10">
+                        <th class="px-3 py-2 text-start font-medium">No</th>
+                        <th class="px-3 py-2 text-start font-medium">Indikator</th>
+                        <th class="px-3 py-2 text-start font-medium">Rumus</th>
+                        <th class="px-3 py-2 text-start font-medium">Capaian</th>
+                        <th class="px-3 py-2 text-start font-medium">Target</th>
+                        <th class="px-3 py-2 text-start font-medium">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (\App\Filament\Pages\LaporanPekerjaan::indikatorKpi() as $kunci => $indikator)
+                        @php $k = $kpi[$kunci]; @endphp
+                        <tr class="border-b border-gray-100 dark:border-white/5">
+                            <td class="px-3 py-2">{{ $loop->iteration }}</td>
+                            <td class="px-3 py-2">{{ $indikator['nama'] }}</td>
+                            <td class="px-3 py-2 text-gray-500">{{ $indikator['rumus'] }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap">
+                                @if ($k['persen'] === null)
+                                    -
+                                @else
+                                    <span class="font-semibold">{{ number_format($k['persen'], 1, ',', '.') }}%</span>
+                                    <span class="text-gray-500">({{ $k['tepat'] }}/{{ $k['total'] }})</span>
+                                @endif
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap">≥ {{ $k['target'] }}%</td>
+                            <td class="px-3 py-2">
+                                @if ($k['tercapai'] === null)
+                                    <x-filament::badge color="gray">Belum ada data</x-filament::badge>
+                                @elseif ($k['tercapai'])
+                                    <x-filament::badge color="success">Tercapai</x-filament::badge>
+                                @else
+                                    <x-filament::badge color="danger">Belum tercapai</x-filament::badge>
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        <p class="mt-3 text-xs text-gray-500">
+            Target waktu dihitung sejak tiket dibuat:
+            @foreach (config('helpdesk.sla') as $prioritas => $sla)
+                {{ ucfirst($prioritas) }} respons ≤ {{ $sla['respons_menit'] }} menit, selesai ≤ {{ $sla['selesai_jam'] }} jam{{ $loop->last ? '.' : ';' }}
+            @endforeach
+            Tiket yang masih dalam batas waktu dan belum direspons/selesai belum dihitung.
+        </p>
+    </x-filament::section>
+
     <x-filament::section heading="Rata-rata Waktu Penyelesaian">
         <p class="text-sm">
             {{ $this->rataRataPenyelesaian() }}

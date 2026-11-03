@@ -16,7 +16,7 @@ class Ticket extends Model
         'judul','deskripsi','tindakan','prioritas','status','tanggal','selesai_at',
     ];
 
-    protected $casts = ['tanggal' => 'date', 'selesai_at' => 'datetime'];
+    protected $casts = ['tanggal' => 'date', 'direspons_at' => 'datetime', 'selesai_at' => 'datetime'];
 
     protected static function booted(): void
     {
@@ -25,12 +25,20 @@ class Ticket extends Model
                 $ticket->nomor = static::nomorBerikutnya($ticket->tanggal);
             }
 
+            if (filled($ticket->status) && $ticket->status !== 'baru' && blank($ticket->direspons_at)) {
+                $ticket->direspons_at = now();
+            }
+
             if ($ticket->status === 'selesai' && blank($ticket->selesai_at)) {
                 $ticket->selesai_at = now();
             }
         });
 
         static::updating(function (Ticket $ticket) {
+            if ($ticket->isDirty('status') && $ticket->status !== 'baru' && blank($ticket->direspons_at)) {
+                $ticket->direspons_at = now();
+            }
+
             if ($ticket->isDirty('status') && $ticket->status === 'selesai' && blank($ticket->selesai_at)) {
                 $ticket->selesai_at = now();
             }
@@ -115,6 +123,61 @@ class Ticket extends Model
             ->value('rata');
 
         return $avgSeconds === null ? null : ((float) $avgSeconds) / 3600;
+    }
+
+    /**
+     * KPI layanan atas tiket di query (default semua tiket):
+     * - respons: tiket direspons dalam target menit prioritasnya ÷ total;
+     * - penyelesaian: tiket selesai dalam target jam prioritasnya ÷ total.
+     * Batas waktu dihitung dari created_at (lihat config/helpdesk.php).
+     * Tiket yang belum direspons/selesai tapi masih dalam batas waktunya
+     * belum bisa dinilai, jadi tidak ikut dihitung; yang sudah lewat batas
+     * dihitung tidak tepat waktu.
+     *
+     * @return array{respons: array, penyelesaian: array} tiap isinya
+     *         {tepat: int, total: int, persen: ?float, target: int, tercapai: ?bool}
+     */
+    public static function kpi(?\Illuminate\Database\Eloquent\Builder $query = null): array
+    {
+        $tickets = ($query ? clone $query : static::query())
+            ->reorder()
+            ->setEagerLoads([])
+            ->get(['id', 'prioritas', 'created_at', 'direspons_at', 'selesai_at']);
+
+        $sla = config('helpdesk.sla');
+        $hitung = ['respons' => [0, 0], 'penyelesaian' => [0, 0]];
+
+        foreach ($tickets as $t) {
+            $target = $sla[$t->prioritas] ?? $sla['sedang'];
+            $batas = [
+                'respons' => [$t->direspons_at, $t->created_at->copy()->addMinutes($target['respons_menit'])],
+                'penyelesaian' => [$t->selesai_at, $t->created_at->copy()->addHours($target['selesai_jam'])],
+            ];
+
+            foreach ($batas as $kpi => [$waktu, $batasWaktu]) {
+                if (! $waktu && now()->lte($batasWaktu)) {
+                    continue;
+                }
+                $hitung[$kpi][1]++;
+                if ($waktu && $waktu->lte($batasWaktu)) {
+                    $hitung[$kpi][0]++;
+                }
+            }
+        }
+
+        return collect($hitung)->map(function (array $nilai, string $kpi) {
+            [$tepat, $total] = $nilai;
+            $target = (int) config("helpdesk.target_kpi.{$kpi}");
+            $persen = $total ? round($tepat / $total * 100, 1) : null;
+
+            return [
+                'tepat' => $tepat,
+                'total' => $total,
+                'persen' => $persen,
+                'target' => $target,
+                'tercapai' => $persen === null ? null : $persen >= $target,
+            ];
+        })->all();
     }
 
     /**
